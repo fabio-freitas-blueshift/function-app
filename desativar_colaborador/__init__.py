@@ -5,17 +5,10 @@ from sqlalchemy.dialects.mysql import JSON
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import pytz
-import os
 import azure.functions as func
 
-def getPropertiesMysql(database):
-    if database == "adm":
-        return os.environ["ADM_STRING_CONNECTION"]
-    if database == "portal":
-        return os.environ["ADM_STRING_CONNECTION"]
-
 def run():
-    engine = create_engine(getPropertiesMysql("adm"))
+    engine = create_engine("mysql+pymysql://usr_clockify_dev@clockifyadmdevblueshift:42Xxor6AFFnV@clockifyadmdevblueshift.mysql.database.azure.com:3306/administrativo_staging2")
     Session = sessionmaker(bind=engine)
     session = Session()
     fuso_horario_sp = pytz.timezone('America/Sao_Paulo')
