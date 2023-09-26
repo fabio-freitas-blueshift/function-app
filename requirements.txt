@@ -4,4 +4,4 @@
 
 azure-functions
 sqlalchemy==1.4.22
-mysql-connection-python
+pymysql

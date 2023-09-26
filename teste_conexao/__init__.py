@@ -9,7 +9,7 @@ import logging
 import azure.functions as func
 
 def run():
-    engine = create_engine("mysql+mysqlconnector://usr_clockify_dev@clockifyadmdevblueshift:42Xxor6AFFnV@clockifyadmdevblueshift.mysql.database.azure.com:3306/administrativo_staging2")
+    engine = create_engine("mysql+pymysql://usr_clockify_dev@clockifyadmdevblueshift:42Xxor6AFFnV@clockifyadmdevblueshift.mysql.database.azure.com:3306/administrativo_staging2")
     Session = sessionmaker(bind=engine)
     session = Session()
     fuso_horario_sp = pytz.timezone('America/Sao_Paulo')
@@ -50,6 +50,9 @@ def run():
     session.close()
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    run()
-    return func.HttpResponse(f"Engine Criada com sucesso")
+    try:
+        run()
+        return func.HttpResponse(f"Engine Criada com sucesso")
+    except:
+        return func.HttpResponse(f"Engine Criada com fracasso")
     
