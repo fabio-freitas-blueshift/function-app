@@ -51,6 +51,5 @@ def run():
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     run()
-    engine.dispose()
     return func.HttpResponse(f"Engine Criada com sucesso")
     
