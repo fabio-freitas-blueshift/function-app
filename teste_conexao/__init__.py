@@ -50,13 +50,7 @@ def run():
     session.close()
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    try:
-        run()
-        return func.HttpResponse(f"Engine Criada com sucesso")
-    except SQLAlchemyError as e:
-        return func.HttpResponse(f"Herror, {e}.")
-    finally:
-        if engine:
-            engine.dispose()
-
+    run()
+    engine.dispose()
+    return func.HttpResponse(f"Engine Criada com sucesso")
     
