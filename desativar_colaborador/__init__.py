@@ -4,11 +4,12 @@ from sqlalchemy import create_engine, Column, Integer, String, Date, Enum
 from sqlalchemy.dialects.mysql import JSON
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from helpers import connection
 import pytz
 import azure.functions as func
 
 def run():
-    engine = create_engine("mysql+pymysql://usr_clockify_dev@clockifyadmdevblueshift:42Xxor6AFFnV@clockifyadmdevblueshift.mysql.database.azure.com:3306/administrativo_staging2")
+    engine = create_engine(connection.getPropertiesMysql("adm"))
     Session = sessionmaker(bind=engine)
     session = Session()
     fuso_horario_sp = pytz.timezone('America/Sao_Paulo')
