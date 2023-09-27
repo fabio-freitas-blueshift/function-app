@@ -16,6 +16,7 @@ import json
 from shutil import copyfile
 import os
 from helpers import connection
+import io
 
 fuso_horario_sp = pytz.timezone('America/Sao_Paulo')
 
@@ -31,22 +32,6 @@ def getDataProcedure(query, db):
     df = pd.DataFrame(result.fetchall(), columns=result.keys())
     conn.close()
     return df
-
-
-def generateXls(df):
-    temp_file = 'RelatorioFuncionarios.xlsx'
-    df.to_excel(temp_file, sheet_name='A1',engine='openpyxl')
-    
-    if os.path.exists(temp_file):
-        return True
-    else:
-        return None
-
-def removeXLSXFile():
-    temp_file = 'RelatorioFuncionarios.xlsx'
-    if os.path.exists(temp_file):
-        os.remove(temp_file)
-
     
 
 def createEmail():
@@ -80,7 +65,7 @@ def createEmail():
 
     """
 
-def sendEmail(mail):
+def sendEmail(mail, writer):
     emailContent = createEmail()
 
     properties = connection.getPropertiesSMTP()
@@ -107,7 +92,7 @@ def sendEmail(mail):
     newName = f"RelatorioFuncionarios_{date_actual.strftime('%d/%m/%Y')}.xlsx"
     
     part = MIMEBase('application', "octet-stream")
-    part.set_payload(open("RelatorioFuncionarios.xlsx", "rb").read())
+    part.set_payload(writer.getvalue())
     encoders.encode_base64(part)
     part.add_header('Content-Disposition', 'attachment; filename="'+newName+'"')
     message.attach(part)
@@ -121,18 +106,15 @@ def sendEmail(mail):
 
 def run():  
     query = "CALL extracao_evanildes_colaboradores_alocacoes()"
-
     attachmentDF = getDataProcedure(query, "adm")
-    
-    generateAttachmentDF = generateXls(attachmentDF)
-    
-    if(generateAttachmentDF):
+    writer = io.BytesIO()
+    attachmentDF.to_excel(writer, sheet_name='A1',engine='openpyxl')
+    if writer:
+        logging.info('correto')
         # listMails = ['evanildes.vieira@blueshift.com.br', 'solange.kato@blueshift.com.br']
         listMails = ['fabio.freitas@blueshift.com.br']
         for row in listMails:
-            sendEmail(row)
-            
-    removeXLSXFile()
+            sendEmail(row, writer)
               
     
 def main(mytimer: func.TimerRequest) -> None:
