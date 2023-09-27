@@ -10,3 +10,4 @@ pandas
 mysql
 mysql-connector
 openpyxl
+io
