@@ -4,13 +4,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-from sqlalchemy import create_engine, Column, Integer, String, Date, Enum, MetaData, Table, select
-from sqlalchemy.dialects.mysql import JSON
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
 from datetime import date, datetime, timezone
 import pytz
-import json
 import logging
 import azure.functions as func
 from helpers import connection
