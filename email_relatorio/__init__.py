@@ -3,6 +3,7 @@ import azure.functions as func
 import mysql.connector
 import pandas as pd
 import smtplib
+from sqlalchemy import create_engine
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -13,47 +14,40 @@ from datetime import date, datetime, timezone,timedelta
 import pytz
 import json
 from shutil import copyfile
+import os
+from helpers import connection
 
 fuso_horario_sp = pytz.timezone('America/Sao_Paulo')
 
 def connMysql(database):    
     mysqlData = connection.getPropertiesMysql(database)
- 
-    conn = mysql.connector.connect(
-          host= mysqlData["hostname"],
-          user=mysqlData["user"],
-          password=mysqlData["password"],
-          database=mysqlData["database"],
-          port=3306
-        )
-    
-
+    engine = create_engine(mysqlData)
+    conn = engine.connect()
     return conn
 
-
-def getDataProcedure(query,db):
+def getDataProcedure(query, db):
     conn = connMysql(db)
-
-    return pd.read_sql(query, conn)
+    result = conn.execute(query)
+    df = pd.DataFrame(result.fetchall(), columns=result.keys())
+    conn.close()
+    return df
 
 
 def generateXls(df):
-    temp_file = '/tmp/RelatorioFuncionarios.xlsx'
-    final = '/dbfs/FileStore/tables/xls/RelatorioFuncionarios.xlsx'
+    temp_file = 'RelatorioFuncionarios.xlsx'
     df.to_excel(temp_file, sheet_name='A1',engine='openpyxl')
     
-    copyfile(temp_file, final)
-    
-    if(dbutils.fs.ls('/FileStore/tables/xls')[0].name == "RelatorioFuncionarios.xlsx"):
+    if os.path.exists(temp_file):
         return True
     else:
         return None
+
+def removeXLSXFile():
+    temp_file = 'RelatorioFuncionarios.xlsx'
+    if os.path.exists(temp_file):
+        os.remove(temp_file)
+
     
-
-def removeXLSXFromDBFS():
-    remove = dbutils.fs.rm("/FileStore/tables/xls/RelatorioFuncionarios.xlsx")
-    return remove
-
 
 def createEmail():
     date_actual = date.today() - timedelta(days=1)
@@ -113,7 +107,7 @@ def sendEmail(mail):
     newName = f"RelatorioFuncionarios_{date_actual.strftime('%d/%m/%Y')}.xlsx"
     
     part = MIMEBase('application', "octet-stream")
-    part.set_payload(open("/dbfs/FileStore/tables/xls/RelatorioFuncionarios.xlsx", "rb").read())
+    part.set_payload(open("RelatorioFuncionarios.xlsx", "rb").read())
     encoders.encode_base64(part)
     part.add_header('Content-Disposition', 'attachment; filename="'+newName+'"')
     message.attach(part)
@@ -137,9 +131,9 @@ def run():
         listMails = ['fabio.freitas@blueshift.com.br']
         for row in listMails:
             sendEmail(row)
+            
+    removeXLSXFile()
               
-    removingXlsx = removeXLSXFromDBFS()
     
-
 def main(mytimer: func.TimerRequest) -> None:
     run()

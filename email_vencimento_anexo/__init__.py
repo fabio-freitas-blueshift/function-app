@@ -114,4 +114,4 @@ def run():
 
 
 def main(mytimer: func.TimerRequest) -> None:
-    #run()
+    run()

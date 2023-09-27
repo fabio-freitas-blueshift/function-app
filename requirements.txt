@@ -8,3 +8,5 @@ pymysql
 pytz
 pandas
 mysql
+mysql-connector
+openpyxl
