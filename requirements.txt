@@ -6,3 +6,6 @@ azure-functions
 sqlalchemy==1.4.22
 pymysql
 pytz
+pandas
+mysql
+shutil
